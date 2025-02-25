@@ -3,8 +3,10 @@ from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 from .models import Game
 from .serializers.common import GameSerializer
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 
 class GameListView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         game = Game.objects.all()
@@ -19,7 +21,9 @@ class GameListView(APIView):
             return Response(serializer.data, 201)
         return Response(serializer.errors, 402)
 
+
 class GameDetailView(APIView):
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, pk):
         try:
