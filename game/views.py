@@ -37,7 +37,7 @@ class GameDetailView(APIView):
         except Game.DoesNotExist:
             raise NotFound(detail="Game not found.")
         
-        serializer = GameSerializer(game, data=request.data)
+        serializer = GameSerializer(game, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
