@@ -7,7 +7,6 @@ class Game(models.Model):
     first_release_date = models.DateField()
     total_rating = models.FloatField()
     genres = models.JSONField()  
-    age_ratings = models.JSONField()  
     storyline = models.TextField()  
 
     def __str__(self):
