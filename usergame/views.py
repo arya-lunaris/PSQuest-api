@@ -2,13 +2,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
-from .models import UserGame
+from .models import UserGame, Game
 from .serializers.common import UserGameSerializer
 from rest_framework import status
-from datetime import datetime
-from usergame.models import UserGame
-from game.models import Game
-
 
 # Create your views here.
 class UserGameListView(APIView):
@@ -59,8 +55,8 @@ class UserGameDetailView(APIView):
         
         user_game.delete()
         return Response(status=204)
+ 
     
-
 class SaveGameView(APIView):
     permission_classes = [IsAuthenticated]  
 
@@ -69,30 +65,34 @@ class SaveGameView(APIView):
         user = request.user  
 
         try:
-            title = data.get("name", "")
+            # Assuming the game data is already formatted correctly
+            title = data.get("title", None)
+            if not title:
+                return Response({"message": "Title is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-            cover = data.get("cover", {})
-            cover_url = cover.get("url", "")
-
+            cover_url = data.get("cover", None)
             if not cover_url:
-                return Response({"message": "Cover URL is missing or invalid."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": "Cover URL is missing."}, status=status.HTTP_400_BAD_REQUEST)
 
-            if cover_url.startswith("//"):
-                cover_url = "https:" + cover_url 
+            # Just get the fields directly as they should be formatted already
+            first_release_date = data.get("first_release_date", None)
+            total_rating = data.get("total_rating", None)
+            genres = data.get("genres", [])
+            storyline = data.get("storyline", None)
 
-            first_release_date = datetime.fromtimestamp(data["first_release_date"])
-
+            # Fetch or create the game
             game, created = Game.objects.get_or_create(
                 title=title,
                 defaults={  
                     "cover": cover_url,
                     "first_release_date": first_release_date,
-                    "total_rating": data["total_rating"],
-                    "genres": data["genres"],
-                    "storyline": data["storyline"]
+                    "total_rating": total_rating,
+                    "genres": genres,
+                    "storyline": storyline
                 }
             )
 
+            # Add the game to the user's collection if not already added
             user_game, user_game_created = UserGame.objects.get_or_create(
                 user=user, 
                 game=game

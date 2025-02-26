@@ -4,7 +4,9 @@ from rest_framework.exceptions import NotFound
 from .models import Game
 from .serializers.common import GameSerializer
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from utils.igdb_api import IGDBAPI
+from utils.igdb_api import IGDBAPI, GENRE_MAPPING
+from datetime import datetime
+
 
 
 
@@ -78,8 +80,45 @@ class FetchIGDBGames(APIView):
 
         igdb_api = IGDBAPI()
         try:
-            games = igdb_api.search_games(search_term, fields="id,name,cover.url,first_release_date,total_rating,genres,storyline", limit=5)
-            return Response(games)
+  
+            games = igdb_api.search_games(
+                search_term, 
+                fields="id,name,cover.url,first_release_date,total_rating,genres,storyline", 
+                limit=5
+            )
+
+            fixed_games = []
+            for game in games:
+                if isinstance(game, dict):
+
+                    game['title'] = game.pop('name', None)
+
+                    if game.get('cover') and game['cover'].get('url'):
+                        cover_url = game['cover']['url']
+                        if cover_url.startswith('//'):
+                            game['cover'] = 'https:' + cover_url  
+                        else:
+                            game['cover'] = cover_url
+                    else:
+                        game['cover'] = None  
+
+
+                    game['genres'] = [GENRE_MAPPING.get(genre, f"Unknown Genre ({genre})") for genre in game.get('genres', [])]
+
+                    if isinstance(game.get('first_release_date'), int):
+                        game['first_release_date'] = datetime.utcfromtimestamp(game['first_release_date']).strftime('%Y-%m-%d')
+
+                    if isinstance(game.get('total_rating'), (float, int)):
+                        game['total_rating'] = round(game['total_rating'])
+
+                    fixed_games.append(game)
+
+            serializer = GameSerializer(data=fixed_games, many=True)
+            if serializer.is_valid():
+                return Response(serializer.data)
+            else:
+                return Response({"detail": "Invalid game data.", "errors": serializer.errors}, status=400)
+
         except Exception as e:
             return Response({"detail": str(e)}, status=400)
 

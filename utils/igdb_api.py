@@ -11,6 +11,12 @@ CLIENT_SECRET = os.getenv('IGDB_CLIENT_SECRET')
 IGDB_API_URL = 'https://api.igdb.com/v4/games'
 ACCESS_TOKEN_URL = 'https://id.twitch.tv/oauth2/token'
 
+
+GENRE_MAPPING = {
+    5: "Shooter",
+    31: "Adventure",
+}
+
 class IGDBAPI:
     def __init__(self):
         self.access_token = self.get_access_token()
