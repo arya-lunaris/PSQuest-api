@@ -4,6 +4,11 @@ from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from .models import UserGame
 from .serializers.common import UserGameSerializer
+from rest_framework import status
+from datetime import datetime
+from usergame.models import UserGame
+from game.models import Game
+
 
 # Create your views here.
 class UserGameListView(APIView):
@@ -54,3 +59,56 @@ class UserGameDetailView(APIView):
         
         user_game.delete()
         return Response(status=204)
+    
+
+class SaveGameView(APIView):
+    permission_classes = [IsAuthenticated]  
+
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        user = request.user  
+
+        try:
+            title = data.get("name", "")
+
+            cover = data.get("cover", {})
+            cover_url = cover.get("url", "")
+
+            if not cover_url:
+                return Response({"message": "Cover URL is missing or invalid."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if cover_url.startswith("//"):
+                cover_url = "https:" + cover_url 
+
+            first_release_date = datetime.fromtimestamp(data["first_release_date"])
+
+            game, created = Game.objects.get_or_create(
+                title=title,
+                defaults={  
+                    "cover": cover_url,
+                    "first_release_date": first_release_date,
+                    "total_rating": data["total_rating"],
+                    "genres": data["genres"],
+                    "storyline": data["storyline"]
+                }
+            )
+
+            user_game, user_game_created = UserGame.objects.get_or_create(
+                user=user, 
+                game=game
+            )
+
+            if user_game_created:
+                return Response({
+                    "message": "Game added to your collection!",
+                    "game_id": game.id
+                }, status=status.HTTP_201_CREATED)
+            else:
+                return Response({
+                    "message": "Game is already in your collection."
+                }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                "message": f"An error occurred: {str(e)}"
+            }, status=status.HTTP_400_BAD_REQUEST)

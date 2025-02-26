@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from utils.igdb_api import IGDBAPI
 
 
+
 class GameListView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -81,3 +82,5 @@ class FetchIGDBGames(APIView):
             return Response(games)
         except Exception as e:
             return Response({"detail": str(e)}, status=400)
+
+
