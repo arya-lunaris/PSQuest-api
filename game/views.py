@@ -84,7 +84,7 @@ class FetchIGDBGames(APIView):
             games = igdb_api.search_games(
                 search_term, 
                 fields="id,name,cover.url,first_release_date,total_rating,genres,storyline", 
-                limit=5
+                limit=30
             )
 
             fixed_games = []

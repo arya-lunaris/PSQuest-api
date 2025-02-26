@@ -65,7 +65,6 @@ class SaveGameView(APIView):
         user = request.user  
 
         try:
-            # Assuming the game data is already formatted correctly
             title = data.get("title", None)
             if not title:
                 return Response({"message": "Title is required."}, status=status.HTTP_400_BAD_REQUEST)
@@ -74,13 +73,11 @@ class SaveGameView(APIView):
             if not cover_url:
                 return Response({"message": "Cover URL is missing."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Just get the fields directly as they should be formatted already
             first_release_date = data.get("first_release_date", None)
             total_rating = data.get("total_rating", None)
             genres = data.get("genres", [])
             storyline = data.get("storyline", None)
 
-            # Fetch or create the game
             game, created = Game.objects.get_or_create(
                 title=title,
                 defaults={  
@@ -92,7 +89,6 @@ class SaveGameView(APIView):
                 }
             )
 
-            # Add the game to the user's collection if not already added
             user_game, user_game_created = UserGame.objects.get_or_create(
                 user=user, 
                 game=game
