@@ -4,6 +4,8 @@ from rest_framework.exceptions import NotFound
 from .models import Game
 from .serializers.common import GameSerializer
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from utils.igdb_api import IGDBAPI
+
 
 class GameListView(APIView):
     permission_classes = [IsAuthenticated]
@@ -12,7 +14,6 @@ class GameListView(APIView):
         game = Game.objects.all()
         game_serialized = GameSerializer(game, many=True)
         return Response(game_serialized.data)
-
 
     def post(self, request):
         if not request.user.is_staff:
@@ -37,7 +38,6 @@ class GameDetailView(APIView):
         game_serialized = GameSerializer(game)
         return Response(game_serialized.data)
 
-
     def put(self, request, pk):
         try:
             game = Game.objects.get(pk=pk)
@@ -53,7 +53,6 @@ class GameDetailView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, 402)
 
-
     def delete(self, request, pk):
         try:
             game = Game.objects.get(pk=pk)
@@ -65,3 +64,15 @@ class GameDetailView(APIView):
         
         game.delete()
         return Response(status=204)
+
+
+class FetchIGDBGames(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        igdb_api = IGDBAPI()
+        try:
+            games = igdb_api.fetch_games(fields="name,cover.url", limit=5)
+            return Response(games)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=400)

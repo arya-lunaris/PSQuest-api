@@ -12,6 +12,8 @@ djangorestframework = "*"
 pyjwt = "*"
 django-environ = "*"
 django-cors-headers = "*"
+requests = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
