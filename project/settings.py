@@ -45,8 +45,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'users',
     'game',
-    'usergame'
-    
+    'usergame',
 ]
 
 CORS_ALLOWED_ORIGINS = [
@@ -58,7 +57,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -146,3 +145,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CSRF_COOKIE_HTTPONLY = False  # Allow CSRF cookies to be accessible via JavaScript
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000']  # Add localhost if it's missing
