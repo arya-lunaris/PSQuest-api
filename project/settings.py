@@ -42,9 +42,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'users',
     'game',
-    'corsheaders'
+    'usergame'
+    
 ]
 
 CORS_ALLOWED_ORIGINS = [
