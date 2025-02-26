@@ -1,6 +1,7 @@
 import os
 import requests
 from dotenv import load_dotenv
+from game.genre_mapping import GENRE_MAPPING
 
 dotenv_path = os.path.join(os.path.dirname(__file__), '..', 'project', '.env')
 load_dotenv(dotenv_path=dotenv_path)
@@ -12,40 +13,14 @@ IGDB_API_URL = 'https://api.igdb.com/v4/games'
 ACCESS_TOKEN_URL = 'https://id.twitch.tv/oauth2/token'
 
 
-GENRE_MAPPING = {
-    2: "Point-and-click",
-    4: "Fighting",
-    5: "Shooter",
-    7: "Music",
-    8: "Platform",
-    9: "Puzzle",
-    10: "Racing",
-    11: "Real Time Strategy (RTS)",
-    12: "Role-playing (RPG)",
-    13: "Simulator",
-    14: "Sport",
-    15: "Strategy",
-    16: "Turn-based strategy (TBS)",
-    24: "Tactical",
-    25: "Hack and slash/Beat 'em up",
-    26: "Quiz/Trivia",
-    30: "Pinball",
-    31: "Adventure",
-    32: "Indie",
-    33: "Arcade",
-    34: "Visual Novel",
-    35: "Card & Board Game",
-    36: "MOBA"
-}
-
-
 class IGDBAPI:
     def __init__(self):
-        self.access_token = self.get_access_token()
+        self.access_token = None
+        self.get_access_token()
 
     def get_access_token(self):
         """
-        Get the access token from Twitch OAuth2 API
+        Get or refresh the access token.
         """
         payload = {
             'client_id': CLIENT_ID,
@@ -57,30 +32,39 @@ class IGDBAPI:
         response_data = response.json()
 
         if response.status_code == 200:
-            return response_data['access_token']
+            self.access_token = response_data['access_token']
         else:
             raise Exception(f"Error fetching access token: {response_data.get('message', 'Unknown error')}")
 
-    def search_games(self, search_term, fields='id,name,cover.url,first_release_date,total_rating,genres,storyline', limit=10):
+    def make_request(self, endpoint, data):
         """
-        Search games from IGDB API based on a search term.
-        
-        :param search_term: The term to search for in the IGDB database.
-        :param fields: The fields to fetch from the database.
-        :param limit: The number of games to retrieve.
-        :return: The response from the IGDB API containing the game data.
+        Generic method to make a request to the IGDB API, with automatic token refresh.
         """
         headers = {
             'Client-ID': CLIENT_ID,
             'Authorization': f'Bearer {self.access_token}'
         }
 
-        data = f"fields {fields}; search \"{search_term}\"; limit {limit};"
+        response = requests.post(endpoint, headers=headers, data=data)
 
-        response = requests.post(IGDB_API_URL, headers=headers, data=data)
+        if response.status_code == 401: 
+            self.get_access_token()
+            headers['Authorization'] = f'Bearer {self.access_token}'
+            response = requests.post(endpoint, headers=headers, data=data)
 
         if response.status_code == 200:
             return response.json()
         else:
-            raise Exception(f"Error searching games: {response.text}")
+            raise Exception(f"Error in IGDB API request: {response.text}")
 
+    def search_games(self, search_term, fields='id,name,cover.url,first_release_date,total_rating,genres,storyline', limit=10):
+        """
+        Search games in IGDB API and map genres.
+        """
+        query = f"fields {fields}; search \"{search_term}\"; limit {limit};"
+        games = self.make_request(IGDB_API_URL, query)
+
+        for game in games:
+            game['mapped_genres'] = [GENRE_MAPPING.get(genre, f"ID:{genre}") for genre in game.get('genres', [])]
+        
+        return games
