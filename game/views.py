@@ -15,6 +15,9 @@ class GameListView(APIView):
 
 
     def post(self, request):
+        if not request.user.is_staff:
+            return Response({"detail": "You do not have permission to perform this action."}, status=403)
+        
         serializer = GameSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -41,6 +44,9 @@ class GameDetailView(APIView):
         except Game.DoesNotExist:
             raise NotFound(detail="Game not found.")
         
+        if not request.user.is_staff:
+            return Response({"detail": "You do not have permission to perform this action."}, status=403)
+        
         serializer = GameSerializer(game, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -53,6 +59,9 @@ class GameDetailView(APIView):
             game = Game.objects.get(pk=pk)
         except Game.DoesNotExist:
             raise NotFound(detail="Game not found.")
+        
+        if not request.user.is_staff:
+            return Response({"detail": "You do not have permission to perform this action."}, status=403)
         
         game.delete()
         return Response(status=204)

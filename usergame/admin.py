@@ -6,7 +6,7 @@ from django.utils.safestring import mark_safe
 class UserGameAdmin(admin.ModelAdmin):
     list_display = ('user', 'game_title', 'status', 'rating', 'review', 'added_on', 'game_release_date', 'game_rating', 'game_genres')
 
-    readonly_fields = ('game_title', 'game_description', 'game_cover', 'game_release_date', 'game_rating', 'game_genres', 'status', 'rating', 'review', 'added_on')
+    readonly_fields = ('game_title', 'game_description', 'game_cover', 'game_release_date', 'game_rating', 'game_genres', 'added_on')
 
     def game_title(self, obj):
         return obj.game.title
@@ -32,6 +32,6 @@ class UserGameAdmin(admin.ModelAdmin):
         return ', '.join(obj.game.genres) 
     game_genres.short_description = 'Genres'
 
-    fields = ('user', 'game', 'game_title', 'game_description', 'game_cover', 'game_release_date', 'game_rating', 'game_genres', 'status', 'rating', 'review', 'added_on')
+    fields = ('user', 'game', 'status', 'rating', 'review', 'game_title', 'game_description', 'game_cover', 'game_release_date', 'game_rating', 'game_genres', 'added_on')
 
 admin.site.register(UserGame, UserGameAdmin)
