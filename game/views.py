@@ -70,9 +70,14 @@ class FetchIGDBGames(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+        search_term = request.query_params.get('search', None)
+
+        if not search_term:
+            return Response({"detail": "Search term is required."}, status=400)
+
         igdb_api = IGDBAPI()
         try:
-            games = igdb_api.fetch_games(fields="name,cover.url", limit=5)
+            games = igdb_api.search_games(search_term, fields="id,name,cover.url,first_release_date,total_rating,genres,storyline", limit=5)
             return Response(games)
         except Exception as e:
             return Response({"detail": str(e)}, status=400)

@@ -33,10 +33,11 @@ class IGDBAPI:
         else:
             raise Exception(f"Error fetching access token: {response_data.get('message', 'Unknown error')}")
 
-    def fetch_games(self, fields='*', limit=10):
+    def search_games(self, search_term, fields='id,name,cover.url,first_release_date,total_rating,genres,storyline', limit=10):
         """
-        Fetch games from IGDB API.
+        Search games from IGDB API based on a search term.
         
+        :param search_term: The term to search for in the IGDB database.
         :param fields: The fields to fetch from the database.
         :param limit: The number of games to retrieve.
         :return: The response from the IGDB API containing the game data.
@@ -46,20 +47,12 @@ class IGDBAPI:
             'Authorization': f'Bearer {self.access_token}'
         }
 
-        data = f"fields {fields}; limit {limit};"
+        data = f"fields {fields}; search \"{search_term}\"; limit {limit};"
 
         response = requests.post(IGDB_API_URL, headers=headers, data=data)
 
         if response.status_code == 200:
             return response.json()
         else:
-            raise Exception(f"Error fetching games: {response.text}")
+            raise Exception(f"Error searching games: {response.text}")
 
-
-if __name__ == "__main__":
-    igdb_api = IGDBAPI()
-    try:
-        games = igdb_api.fetch_games(fields="name,cover.url", limit=5)
-        print(games)  
-    except Exception as e:
-        print(f"An error occurred: {e}")
