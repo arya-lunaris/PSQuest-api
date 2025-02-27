@@ -44,7 +44,8 @@ class LoginView(APIView):
                     'user': {
                         'id': user.id,
                         'username': user.username,  
-                        'is_admin': user.is_staff
+                        'is_admin': user.is_staff,
+                        'email': user.email
                     },
                     'exp': int(exp_date.strftime('%s'))
                 },
