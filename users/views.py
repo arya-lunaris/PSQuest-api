@@ -64,6 +64,11 @@ class LoginView(APIView):
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        user = request.user  
+        serializer = UserSerializer(user)  
+        return Response(serializer.data, status=200)
+
     def put(self, request):
         user = request.user  
 
