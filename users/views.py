@@ -65,12 +65,12 @@ class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
 
     def put(self, request):
-        user = request.user
+        user = request.user  
 
         serializer = UserSerializer(user, data=request.data, partial=True)
 
         if serializer.is_valid():
-            serializer.save()
+            serializer.save() 
             return Response(serializer.data, status=200)
 
         return Response(serializer.errors, status=400)
