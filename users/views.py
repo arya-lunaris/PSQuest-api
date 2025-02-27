@@ -21,26 +21,29 @@ class SignupView(APIView):
     
 
 class LoginView(APIView):
-    
+
     def post(self, request):
-        username = request.data.get('username')
+        identifier = request.data.get('identifier') 
         password = request.data.get('password')
 
         try:
             User = get_user_model()
-            user = User.objects.get(username=username)
+            
+            user = User.objects.filter(username=identifier).first() or User.objects.filter(email=identifier).first()
+
+            if not user:
+                raise NotAuthenticated('Invalid credentials')
 
             if not user.check_password(password):
-                raise ValidationError('Passwords do not match')
+                raise ValidationError('Incorrect password')
             
             exp_date = datetime.now() + timedelta(days=1)
-            
 
             token = jwt.encode(
                 payload={
                     'user': {
                         'id': user.id,
-                        'username': user.profile_image,
+                        'username': user.username,  
                         'is_admin': user.is_staff
                     },
                     'exp': int(exp_date.strftime('%s'))
@@ -49,11 +52,12 @@ class LoginView(APIView):
                 algorithm='HS256'
             )
 
-            return Response({ 'message': 'Login was successful', 'token': token})
+            return Response({'message': 'Login was successful', 'token': token})
 
-        except (User.DoesNotExist, ValidationError) as e:
+        except (ValidationError, NotAuthenticated) as e:
             print(e)
             raise NotAuthenticated('Invalid credentials')
+
  
 
 class ProfileView(APIView):

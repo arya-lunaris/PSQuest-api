@@ -8,8 +8,6 @@ from utils.igdb_api import IGDBAPI, GENRE_MAPPING
 from datetime import datetime
 
 
-
-
 class GameListView(APIView):
     permission_classes = [IsAuthenticated]
 
