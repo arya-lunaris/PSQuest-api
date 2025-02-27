@@ -5,8 +5,9 @@ from django.contrib.auth import get_user_model
 import jwt
 from .serializers.common import UserSerializer
 from django.conf import settings
-from datetime import datetime, timedelta
+from datetime import timedelta
 from rest_framework.permissions import IsAuthenticated
+from django.utils import timezone
 
 
 # Create your views here.
@@ -21,7 +22,6 @@ class SignupView(APIView):
     
 
 class LoginView(APIView):
-
     def post(self, request):
         identifier = request.data.get('identifier') 
         password = request.data.get('password')
@@ -36,18 +36,18 @@ class LoginView(APIView):
 
             if not user.check_password(password):
                 raise ValidationError('Incorrect password')
-            
-            exp_date = datetime.now() + timedelta(days=1)
+
+            exp_date = timezone.now() + timedelta(days=7)
 
             token = jwt.encode(
                 payload={
                     'user': {
                         'id': user.id,
-                        'username': user.username,  
+                        'username': user.username,
                         'is_admin': user.is_staff,
                         'email': user.email
                     },
-                    'exp': int(exp_date.strftime('%s'))
+                    'exp': int(exp_date.timestamp())  
                 },
                 key=settings.SECRET_KEY,
                 algorithm='HS256'
