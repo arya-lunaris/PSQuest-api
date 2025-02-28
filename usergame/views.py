@@ -7,8 +7,6 @@ from .serializers.common import UserGameSerializer
 from rest_framework import status
 from django.utils import timezone
 
-
-# Create your views here.
 class UserGameListView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -57,8 +55,8 @@ class UserGameDetailView(APIView):
         
         user_game.delete()
         return Response(status=204)
- 
-    
+
+
 class SaveGameView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -76,8 +74,7 @@ class SaveGameView(APIView):
             total_rating = data.get("total_rating", None)
             genres = data.get("genres", [])
             storyline = data.get("storyline", "Storyline unavailable")
-            
-            page_status = data.get("status", "wishlist") 
+            page_status = data.get("status", "wishlist")  
 
             game, created = Game.objects.get_or_create(
                 title=title,
@@ -90,27 +87,30 @@ class SaveGameView(APIView):
                 }
             )
 
-            user_game, user_game_created = UserGame.objects.get_or_create(
-                user=user, 
-                game=game,
-                defaults={"page_status": page_status}  
-            )
+            user_game, created = UserGame.objects.get_or_create(user=user, game=game)
 
-            if user_game_created:
+            if created:
+                user_game.page_status = page_status
+                user_game.save()
                 return Response({
-                    "message": f"Game added to your {page_status}!",  
+                    "message": f"Game added to your {page_status}!",
                     "game_id": game.id
                 }, status=status.HTTP_201_CREATED)
+            elif user_game.page_status != page_status:
+                user_game.page_status = page_status  
+                user_game.save()
+                return Response({
+                    "message": f"Game moved to your {page_status}."
+                }, status=status.HTTP_200_OK)
             else:
                 return Response({
-                    "message": f"Game is already in your {page_status}." 
+                    "message": f"Game is already in your {page_status}."
                 }, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({
                 "message": f"An error occurred: {str(e)}"
             }, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class UserGameByStatusView(APIView):
@@ -124,4 +124,3 @@ class UserGameByStatusView(APIView):
         
         serialized_games = UserGameSerializer(user_games, many=True)
         return Response(serialized_games.data)
-
