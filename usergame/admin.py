@@ -5,7 +5,7 @@ from django.utils.safestring import mark_safe
 from game.genre_mapping import GENRE_MAPPING 
 
 class UserGameAdmin(admin.ModelAdmin):
-    list_display = ('user', 'game_title', 'status', 'rating', 'review', 'game_release_date', 'game_rating', 'game_genres')
+    list_display = ('user', 'game_title', 'page_status', 'game_rating', 'rating', 'review', 'game_release_date', 'game_genres')
 
     readonly_fields = ('game_title', 'game_description', 'game_cover', 'game_release_date', 'game_rating', 'game_genres',)
 
@@ -38,5 +38,9 @@ class UserGameAdmin(admin.ModelAdmin):
             return ', '.join(GENRE_MAPPING.get(genre, f"{genre}") for genre in genres)
         except Exception as e:
             return f"Error: {str(e)}"
+
+    def page_status(self, obj):
+        return obj.status 
+    page_status.short_description = 'Status'
 
 admin.site.register(UserGame, UserGameAdmin)

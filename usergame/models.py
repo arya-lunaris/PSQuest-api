@@ -8,8 +8,13 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 class UserGame(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
-    status = models.CharField(
-        max_length=50, 
+    page_status = models.CharField(
+        max_length=50,
+        choices=[('collection', 'Collection'), ('wishlist', 'Wishlist')],
+        default='wishlist'
+    )
+    game_status = models.CharField(
+        max_length=50,
         choices=[('not_started', 'Not Started'), ('currently_playing', 'Currently Playing'), ('completed', 'Completed')],
         default='not_started'
     )
@@ -22,3 +27,4 @@ class UserGame(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.game.title}"
+

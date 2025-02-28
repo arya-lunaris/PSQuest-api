@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from .models import UserGame, Game
 from .serializers.common import UserGameSerializer
 from rest_framework import status
+from django.utils import timezone
+
 
 # Create your views here.
 class UserGameListView(APIView):
@@ -57,8 +59,6 @@ class UserGameDetailView(APIView):
         return Response(status=204)
  
     
-from django.utils import timezone
-
 class SaveGameView(APIView):
     permission_classes = [IsAuthenticated]  
 
@@ -72,14 +72,12 @@ class SaveGameView(APIView):
                 return Response({"message": "Title is required."}, status=status.HTTP_400_BAD_REQUEST)
 
             cover_url = data.get("cover", "https://via.placeholder.com/150") 
-
             first_release_date = data.get("first_release_date") or timezone.now().date()  
-
             total_rating = data.get("total_rating", None)
-
             genres = data.get("genres", [])
-
             storyline = data.get("storyline", "Storyline unavailable")
+            
+            game_status = data.get("status", "wishlist")  
 
             game, created = Game.objects.get_or_create(
                 title=title,
@@ -94,20 +92,33 @@ class SaveGameView(APIView):
 
             user_game, user_game_created = UserGame.objects.get_or_create(
                 user=user, 
-                game=game
+                game=game,
+                defaults={"game_status": game_status}  
             )
 
             if user_game_created:
                 return Response({
-                    "message": "Game added to your collection!",
+                    "message": f"Game added to your {game_status}!",
                     "game_id": game.id
                 }, status=status.HTTP_201_CREATED)
             else:
                 return Response({
-                    "message": "Game is already in your collection."
+                    "message": f"Game is already in your {game_status}." 
                 }, status=status.HTTP_200_OK)
 
         except Exception as e:
             return Response({
                 "message": f"An error occurred: {str(e)}"
             }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserGameByStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, status_type):
+        if status_type not in ["wishlist", "collection"]:
+            return Response({"message": "Invalid status type."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_games = UserGame.objects.filter(user=request.user, status=status_type)
+        serialized_games = UserGameSerializer(user_games, many=True)
+        return Response(serialized_games.data)
