@@ -60,7 +60,7 @@ class UserGameDetailView(APIView):
  
     
 class SaveGameView(APIView):
-    permission_classes = [IsAuthenticated]  
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         data = request.data
@@ -77,7 +77,7 @@ class SaveGameView(APIView):
             genres = data.get("genres", [])
             storyline = data.get("storyline", "Storyline unavailable")
             
-            game_status = data.get("status", "wishlist")  
+            page_status = data.get("status", "wishlist") 
 
             game, created = Game.objects.get_or_create(
                 title=title,
@@ -93,17 +93,17 @@ class SaveGameView(APIView):
             user_game, user_game_created = UserGame.objects.get_or_create(
                 user=user, 
                 game=game,
-                defaults={"game_status": game_status}  
+                defaults={"page_status": page_status}  
             )
 
             if user_game_created:
                 return Response({
-                    "message": f"Game added to your {game_status}!",
+                    "message": f"Game added to your {page_status}!",  
                     "game_id": game.id
                 }, status=status.HTTP_201_CREATED)
             else:
                 return Response({
-                    "message": f"Game is already in your {game_status}." 
+                    "message": f"Game is already in your {page_status}." 
                 }, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -112,13 +112,16 @@ class SaveGameView(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class UserGameByStatusView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, status_type):
-        if status_type not in ["wishlist", "collection"]:
+    def get(self, request, page_status_type):  
+        if page_status_type not in ["wishlist", "collection"]:  
             return Response({"message": "Invalid status type."}, status=status.HTTP_400_BAD_REQUEST)
 
-        user_games = UserGame.objects.filter(user=request.user, status=status_type)
+        user_games = UserGame.objects.filter(user=request.user, page_status=page_status_type)
+        
         serialized_games = UserGameSerializer(user_games, many=True)
         return Response(serialized_games.data)
+
