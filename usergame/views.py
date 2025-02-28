@@ -57,6 +57,8 @@ class UserGameDetailView(APIView):
         return Response(status=204)
  
     
+from django.utils import timezone
+
 class SaveGameView(APIView):
     permission_classes = [IsAuthenticated]  
 
@@ -69,14 +71,15 @@ class SaveGameView(APIView):
             if not title:
                 return Response({"message": "Title is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-            cover_url = data.get("cover", None)
-            if not cover_url:
-                return Response({"message": "Cover URL is missing."}, status=status.HTTP_400_BAD_REQUEST)
+            cover_url = data.get("cover", "https://via.placeholder.com/150") 
 
-            first_release_date = data.get("first_release_date", None)
+            first_release_date = data.get("first_release_date") or timezone.now().date()  
+
             total_rating = data.get("total_rating", None)
+
             genres = data.get("genres", [])
-            storyline = data.get("storyline", None)
+
+            storyline = data.get("storyline", "Storyline unavailable")
 
             game, created = Game.objects.get_or_create(
                 title=title,
