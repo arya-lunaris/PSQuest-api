@@ -4,6 +4,7 @@ from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 from .models import UserGame, Game
 from .serializers.common import UserGameSerializer
+from .serializers.usergame import FullUserGameSerializer
 from rest_framework import status
 from django.utils import timezone
 
@@ -124,3 +125,15 @@ class UserGameByStatusView(APIView):
         
         serialized_games = UserGameSerializer(user_games, many=True)
         return Response(serialized_games.data)
+
+
+class FullGameDetailView(APIView):
+    def get(self, request, pk):
+        try:
+            user_game = UserGame.objects.get(pk=pk)
+            serializer = FullUserGameSerializer(user_game)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except UserGame.DoesNotExist:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
