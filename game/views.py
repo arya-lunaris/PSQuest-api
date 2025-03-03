@@ -78,7 +78,6 @@ class FetchIGDBGames(APIView):
 
         igdb_api = IGDBAPI()
         try:
-  
             games = igdb_api.search_games(
                 search_term, 
                 fields="id,name,cover.url,first_release_date,total_rating,genres,storyline", 
@@ -93,13 +92,16 @@ class FetchIGDBGames(APIView):
 
                     if game.get('cover') and game['cover'].get('url'):
                         cover_url = game['cover']['url']
+                        
                         if cover_url.startswith('//'):
-                            game['cover'] = 'https:' + cover_url  
-                        else:
-                            game['cover'] = cover_url
+                            cover_url = 'https:' + cover_url
+
+                        if 't_thumb' in cover_url:
+                            cover_url = cover_url.replace("t_thumb", "t_cover_big") 
+
+                        game['cover'] = cover_url
                     else:
                         game['cover'] = None  
-
 
                     game['genres'] = [GENRE_MAPPING.get(genre, f"Unknown Genre ({genre})") for genre in game.get('genres', [])]
 
@@ -119,5 +121,3 @@ class FetchIGDBGames(APIView):
 
         except Exception as e:
             return Response({"detail": str(e)}, status=400)
-
-

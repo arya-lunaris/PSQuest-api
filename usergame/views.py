@@ -58,13 +58,6 @@ class UserGameDetailView(APIView):
         return Response(status=204)
 
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from .models import Game, UserGame
-from rest_framework import status
-
-
 class SaveGameView(APIView):
     permission_classes = [IsAuthenticated]
 
