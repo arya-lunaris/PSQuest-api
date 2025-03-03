@@ -6,7 +6,7 @@ from .models import UserGame, Game
 from .serializers.common import UserGameSerializer
 from .serializers.usergame import FullUserGameSerializer
 from rest_framework import status
-from django.utils import timezone
+from datetime import datetime
 
 class UserGameListView(APIView):
     permission_classes = [IsAuthenticated]
@@ -58,6 +58,13 @@ class UserGameDetailView(APIView):
         return Response(status=204)
 
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import Game, UserGame
+from rest_framework import status
+
+
 class SaveGameView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -66,30 +73,39 @@ class SaveGameView(APIView):
         user = request.user  
 
         try:
-            title = data.get("title", None)
+            title = data.get("title")
             if not title:
                 return Response({"message": "Title is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-            cover_url = data.get("cover", "https://via.placeholder.com/150") 
-            first_release_date = data.get("first_release_date") or timezone.now().date()  
-            total_rating = data.get("total_rating", None)
-            genres = data.get("genres", [])
-            storyline = data.get("storyline", "Storyline unavailable")
-            page_status = data.get("status", "wishlist")  
+            cover_url = data.get("image", "https://via.placeholder.com/150")  
+            first_release_date = data.get("releaseDate") or None  
+            total_rating = data.get("rating") or None  
 
-            game, created = Game.objects.get_or_create(
+            if isinstance(total_rating, str):
+                try:
+                    total_rating = float(total_rating)
+                except ValueError:
+                    total_rating = None
+
+            genres = data.get("genres", [])
+            if isinstance(genres, str):
+                genres = [genres]  
+
+            storyline = data.get("storyline", "Storyline unavailable")
+            page_status = data.get("status", "wishlist")
+
+            game, created = Game.objects.update_or_create(
                 title=title,
-                defaults={  
-                    "cover": cover_url,
+                defaults={
+                    "cover": cover_url if cover_url else None,
                     "first_release_date": first_release_date,
                     "total_rating": total_rating,
                     "genres": genres,
-                    "storyline": storyline
+                    "storyline": storyline,
                 }
             )
 
             user_game, created = UserGame.objects.get_or_create(user=user, game=game)
-
             if created:
                 user_game.page_status = page_status
                 user_game.save()
@@ -98,7 +114,7 @@ class SaveGameView(APIView):
                     "game_id": game.id
                 }, status=status.HTTP_201_CREATED)
             elif user_game.page_status != page_status:
-                user_game.page_status = page_status  
+                user_game.page_status = page_status
                 user_game.save()
                 return Response({
                     "message": f"Game moved to your {page_status}."
@@ -109,9 +125,7 @@ class SaveGameView(APIView):
                 }, status=status.HTTP_200_OK)
 
         except Exception as e:
-            return Response({
-                "message": f"An error occurred: {str(e)}"
-            }, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": f"An error occurred: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserGameByStatusView(APIView):
@@ -135,5 +149,10 @@ class FullGameDetailView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         except UserGame.DoesNotExist:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+
+
 
 

@@ -10,11 +10,3 @@ class FullUserGameSerializer(serializers.ModelSerializer):
         model = UserGame
         fields = ['id', 'user', 'game', 'page_status', 'game_status', 'rating', 'review']
         
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        game = instance.game
-
-        game_data = GameSerializer(game).data
-        representation['game'] = game_data 
-        
-        return representation
