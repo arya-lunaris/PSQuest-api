@@ -124,11 +124,20 @@ class SaveGameView(APIView):
 class UserGameByStatusView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, page_status_type):  
-        if page_status_type not in ["wishlist", "collection"]:  
-            return Response({"message": "Invalid status type."}, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, page_status_type):
+        game_status = request.query_params.get("game_status", None)  
 
-        user_games = UserGame.objects.filter(user=request.user, page_status=page_status_type)
+        if page_status_type not in ["wishlist", "collection"]:
+            return Response({"message": "Invalid page status type."}, status=status.HTTP_400_BAD_REQUEST)
+
+        filter_conditions = {"user": request.user, "page_status": page_status_type}
+
+        if game_status and game_status != "all":
+            if game_status not in ["not_started", "currently_playing", "completed"]:
+                return Response({"message": "Invalid game status."}, status=status.HTTP_400_BAD_REQUEST)
+            filter_conditions["game_status"] = game_status
+
+        user_games = UserGame.objects.filter(**filter_conditions)
         
         serialized_games = UserGameSerializer(user_games, many=True)
         return Response(serialized_games.data)
