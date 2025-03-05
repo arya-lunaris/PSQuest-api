@@ -10,6 +10,7 @@ from django.utils import timezone
 from rest_framework import status
 from .serializers.common import UserSerializer
 
+
 User = get_user_model()
 
 class SignupView(APIView):
@@ -39,18 +40,21 @@ class SignupView(APIView):
             }, status=status.HTTP_201_CREATED)
 
         return Response(serialized_user.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-    
+
 
 class LoginView(APIView):
     def post(self, request):
-        identifier = request.data.get('identifier')  
+        identifier = request.data.get('identifier') 
         password = request.data.get('password')
 
         try:
-            user = User.objects.filter(username=identifier).first() or User.objects.filter(email=identifier).first()
+            user = get_user_model().objects.filter(username=identifier).first() or get_user_model().objects.filter(email=identifier).first()
 
-            if not user or not user.check_password(password):
+            if not user:
                 return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
+            if not user.check_password(password):
+                return Response({'detail': 'Incorrect password'}, status=status.HTTP_401_UNAUTHORIZED)
 
             exp_date = timezone.now() + timedelta(days=7)
             token = jwt.encode(
@@ -69,10 +73,10 @@ class LoginView(APIView):
 
             return Response({'message': 'Login successful', 'token': token})
 
-        except (ValidationError, Exception) as e:
+        except Exception as e:
+            print("Error during login:", e)
             return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        
 
 class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
