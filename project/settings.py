@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False if getenv('ENVIRONMENT') == 'production' else True
+DEBUG = False if os.getenv('ENVIRONMENT') == 'production' else True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'psquest-845c2be5f53d.herokuapp.com']
 
