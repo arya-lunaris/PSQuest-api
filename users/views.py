@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.exceptions import NotAuthenticated, ValidationError
+from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 import jwt
 from django.conf import settings
@@ -50,10 +50,9 @@ class LoginView(APIView):
             user = User.objects.filter(username=identifier).first() or User.objects.filter(email=identifier).first()
 
             if not user or not user.check_password(password):
-                raise NotAuthenticated('Invalid credentials')
+                return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
             exp_date = timezone.now() + timedelta(days=7)
-
             token = jwt.encode(
                 payload={
                     'user': {
@@ -70,8 +69,9 @@ class LoginView(APIView):
 
             return Response({'message': 'Login successful', 'token': token})
 
-        except (ValidationError, NotAuthenticated):
-            raise NotAuthenticated('Invalid credentials')
+        except (ValidationError, Exception) as e:
+            return Response({'detail': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+
         
 
 class ProfileView(APIView):

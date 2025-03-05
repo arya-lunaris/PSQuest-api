@@ -29,6 +29,7 @@ class UserSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         validated_data.pop('password_confirmation', None)
 
+        # Handle password update separately
         password = validated_data.get('password', None)
         if password:
             validated_data['password'] = hashers.make_password(password)
