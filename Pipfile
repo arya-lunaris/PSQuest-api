@@ -15,6 +15,7 @@ django-cors-headers = "*"
 requests = "*"
 python-dotenv = "*"
 djangorestframework-simplejwt = "*"
+whitenoise = "*"
 
 [dev-packages]
 
