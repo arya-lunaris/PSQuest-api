@@ -24,7 +24,7 @@ class SignupView(APIView):
                     'user': {
                         'id': user.id,
                         'username': user.username,
-                        'is_admin': user.is_staff,
+                        'is_staff': user.is_staff,
                         'email': user.email
                     },
                     'exp': int(exp_date.timestamp())  
@@ -58,7 +58,7 @@ class LoginView(APIView):
                     'user': {
                         'id': user.id,
                         'username': user.username,
-                        'is_admin': user.is_staff,
+                        'is_staff': user.is_staff,
                         'email': user.email
                     },
                     'exp': int(exp_date.timestamp())  
@@ -79,11 +79,16 @@ class ProfileView(APIView):
 
     def get(self, request):
         serializer = UserSerializer(request.user)  
+        print(serializer.data)  
+      
         return Response(serializer.data, status=200)
 
     def put(self, request):
+        print(request.data)  
         serializer = UserSerializer(request.user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save() 
             return Response(serializer.data, status=200)
-        return Response(serializer.errors, status=400)
+        else:
+            print("Validation Errors:", serializer.errors)  
+            return Response(serializer.errors, status=400)

@@ -8,7 +8,7 @@ class UserSerializer(serializers.ModelSerializer):
     email = serializers.EmailField()
 
     def validate_email(self, value):
-        if get_user_model().objects.filter(email=value).exists():
+        if value != self.instance.email and get_user_model().objects.filter(email=value).exists():
             raise serializers.ValidationError("A user with this email already exists.")
         return value
 
