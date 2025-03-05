@@ -35,13 +35,18 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'psquest-845c2be5f53d.herokuapp.com']
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',  # Local development URL
     'https://psquest-845c2be5f53d.herokuapp.com',  # Production backend URL
+    'https://psquest.netlify.app',  # Netlify frontend URL
 ]
+
 
 CSRF_TRUSTED_ORIGINS = [
     'https://psquest-845c2be5f53d.herokuapp.com',  # Production backend URL
     'http://localhost:5173',  # Local development frontend URL
+    'https://psquest.netlify.app',  # Netlify frontend URL
 ]
 
+
+CORS_ALLOW_CREDENTIALS = True
 
 # Application definition
 
