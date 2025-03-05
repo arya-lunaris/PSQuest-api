@@ -32,10 +32,14 @@ DEBUG = False if os.getenv('ENVIRONMENT') == 'production' else True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'psquest-845c2be5f53d.herokuapp.com']
 
-CORS_ALLOWED_ORIGINS = ['http://localhost:5173']
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',  # Local development URL
+    'https://psquest-845c2be5f53d.herokuapp.com',  # Production backend URL
+]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://psquest-845c2be5f53d.herokuapp.com'
+    'https://psquest-845c2be5f53d.herokuapp.com',  # Production backend URL
+    'http://localhost:5173',  # Local development frontend URL
 ]
 
 
@@ -53,10 +57,6 @@ INSTALLED_APPS = [
     'users',
     'game',
     'usergame',
-]
-
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173'
 ]
 
 MIDDLEWARE = [    
@@ -167,10 +167,6 @@ if not DEBUG:
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CSRF_COOKIE_HTTPONLY = False  # Allow CSRF cookies to be accessible via JavaScript
-CSRF_TRUSTED_ORIGINS = [
-    'https://psquest-845c2be5f53d.herokuapp.com',  # Your production backend URL
-    'https://psquest.netlify.app',  # Your deployed frontend URL
-    'http://localhost:8000',  # For local development (if you're running locally)
-]
+
 
 
