@@ -168,7 +168,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CSRF_COOKIE_HTTPONLY = False  # Allow CSRF cookies to be accessible via JavaScript
 CSRF_TRUSTED_ORIGINS = [
-    'https://psquest-845c2be5f53d.herokuapp.com',  # Production URL
-    'http://localhost:8000',  # Local development URL
-]  # Add localhost if it's missing
+    'https://psquest-845c2be5f53d.herokuapp.com',  # Your production backend URL
+    'https://psquest.netlify.app',  # Your deployed frontend URL
+    'http://localhost:8000',  # For local development (if you're running locally)
+]
+
 
