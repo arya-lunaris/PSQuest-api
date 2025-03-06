@@ -71,7 +71,17 @@ class SaveGameView(APIView):
                 return Response({"message": "Title is required."}, status=status.HTTP_400_BAD_REQUEST)
 
             cover_url = data.get("image", "https://via.placeholder.com/150")  
-            first_release_date = data.get("releaseDate") or None  
+            
+            first_release_date = data.get("releaseDate")
+            
+            if first_release_date and first_release_date != "Release Date unavailable":
+                try:
+                    first_release_date = datetime.strptime(first_release_date, "%Y-%m-%d").date()
+                except ValueError:
+                    first_release_date = None
+            else:
+                first_release_date = None
+            
             total_rating = data.get("rating") or None  
 
             if isinstance(total_rating, str):
