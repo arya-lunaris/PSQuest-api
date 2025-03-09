@@ -70,7 +70,7 @@ class SaveGameView(APIView):
             if not title:
                 return Response({"message": "Title is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-            cover_url = data.get("image", "https://via.placeholder.com/150")  
+            cover_url = data.get("image", "https://imgur.com/sJpWrtm.png")  
             
             first_release_date = data.get("releaseDate")
             
